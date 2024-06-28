@@ -4,11 +4,19 @@ local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local previewers = require('telescope.previewers.term_previewer')
+local entry_display = require('telescope.pickers.entry_display')
 local utils = require('telescope.utils')
 
 local map_both = function(map, keys, func)
   map("i", keys, func)
   map("n", keys, func)
+end
+
+local z_config = require("telescope._extensions.zoxide.config")
+
+local shell_arg = "-c"
+if vim.o.shell == "cmd.exe" then
+  shell_arg = "/c"
 end
 
 -- Copied unexported highlighter from telescope/sorters.lua
@@ -65,10 +73,30 @@ local entry_maker = function(item)
   local item_path = string.gsub(trimmed, '^[^%s]* (.*)$', '%1')
   local score = tonumber(string.gsub(trimmed, '^([^%s]*) .*$', '%1'), 10)
 
+  local show_score = z_config.get_config().show_score
+  local score_string_a = show_score and string.sub(string.gsub(item, '%..*', ''), 3) or nil
+  local score_string_b = show_score and string.sub(string.gsub(item, '.-%.', '.', 1), 1, 2) or nil
+  local score_string = show_score and score_string_a .. score_string_b or ''
+
+  local displayer = entry_display.create({
+    separator = " ",
+    items = {
+      { width = #score_string },
+      { remaining = true },
+    },
+  })
+
+  local make_display = function()
+    return displayer({
+      { score_string, 'Constant' },
+      item_path,
+    })
+  end
+
   return {
     value = item_path,
     ordinal = item_path,
-    display = item_path,
+    display = show_score and make_display or item_path,
     z_score = score,
     path = item_path
   }
@@ -95,12 +123,7 @@ end
 return function(opts)
   opts = opts or {}
 
-  local z_config = require("telescope._extensions.zoxide.config")
   local cmd = z_config.get_config().list_command
-  local shell_arg = "-c"
-  if vim.o.shell == "cmd.exe" then
-    shell_arg = "/c"
-  end
   opts.cmd = vim.F.if_nil(opts.cmd, {vim.o.shell, shell_arg, cmd})
 
   pickers.new(opts, {

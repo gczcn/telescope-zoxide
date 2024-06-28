@@ -131,6 +131,10 @@ vim.keymap.set("n", "<leader>cd", t.extensions.zoxide.list)
 {
   prompt_title = "[ Zoxide List ]",
 
+  previewer = true,
+
+  show_score = true,
+
   -- Zoxide list command with score
   list_command = "zoxide query -ls",
   mappings = {
