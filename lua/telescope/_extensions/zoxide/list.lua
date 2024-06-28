@@ -3,11 +3,12 @@ local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
+local previewers = require('telescope.previewers.term_previewer')
 local utils = require('telescope.utils')
 
 local map_both = function(map, keys, func)
-      map("i", keys, func)
-      map("n", keys, func)
+  map("i", keys, func)
+  map("n", keys, func)
 end
 
 -- Copied unexported highlighter from telescope/sorters.lua
@@ -110,6 +111,7 @@ return function(opts)
       entry_maker = entry_maker
     },
     sorter = fuzzy_with_z_score_bias(opts),
+    previewer = z_config.get_config().previewer and previewers.cat.new(opts) or nil,
     attach_mappings = function(prompt_bufnr, map)
       local mappings = z_config.get_config().mappings
 

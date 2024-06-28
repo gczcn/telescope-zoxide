@@ -7,6 +7,8 @@ local config = {}
 local default_config = {
   prompt_title = "[ Zoxide List ]",
 
+  previewer = true,
+
   -- Zoxide list command with score
   list_command = "zoxide query -ls",
   mappings = {
